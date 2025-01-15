@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
-	"strings"
+	"weather/geo"
+	"weather/weather"
 )
 
 func main() {
@@ -16,14 +16,22 @@ func main() {
 
 	fmt.Printf("Город, %s!\n", *city)
 	fmt.Println(*format)
-
-	r := strings.NewReader("Привет! я поток данных!")
-	block := make([]byte, 4)
-	for {
-		_, err := r.Read(block)
-		fmt.Printf("%q\n", block)
-		if err == io.EOF {
-			break
-		}
+	geoData, err := geo.GetMyLocation(*city)
+	if err != nil {
+		fmt.Println(err.Error())
 	}
+	fmt.Println(geoData)
+
+	weatherResp := weather.GetWeather(*geoData, *format)
+	fmt.Println(weatherResp)
 }
+
+//r := strings.NewReader("Привет! я поток данных!")
+//block := make([]byte, 4)
+//for {
+//	_, err := r.Read(block)
+//	fmt.Printf("%q\n", block)
+//	if err == io.EOF {
+//		break
+//	}
+//}
