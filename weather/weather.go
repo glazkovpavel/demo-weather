@@ -1,6 +1,7 @@
 package weather
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,11 +9,16 @@ import (
 	"weather/geo"
 )
 
-func GetWeather(geo geo.GeoData, format int) string {
+var ErrInvalidFormat = errors.New("invalid format")
+
+func GetWeather(geo geo.GeoData, format int) (string, error) {
+	if format < 1 || format > 4 {
+		return "", ErrInvalidFormat
+	}
 	baseUrl, err := url.Parse("https://wttr.in/" + geo.City)
 	if err != nil {
 		fmt.Println(err.Error())
-		return ""
+		return "", errors.New("ERROR_URL")
 	}
 	params := url.Values{}
 	params.Add("format", fmt.Sprint(format))
@@ -20,13 +26,13 @@ func GetWeather(geo geo.GeoData, format int) string {
 	res, err := http.Get(baseUrl.String())
 	if err != nil {
 		fmt.Println(err.Error())
-		return ""
+		return "", errors.New("ERROR_HTTP")
 	}
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err.Error())
-		return ""
+		return "", errors.New("ERROR_ReadBody")
 	}
-	return string(body)
+	return string(body), nil
 }

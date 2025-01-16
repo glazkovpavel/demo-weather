@@ -3,6 +3,7 @@ package geo
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,11 +17,14 @@ type CityPopulationResponse struct {
 	Error bool `json:"error"`
 }
 
+var ErrorNoCity = errors.New("NO_CITY_FOUND")
+var ErrNot200 = errors.New("NOT 200")
+
 func GetMyLocation(city string) (*GeoData, error) {
 	if city != "" {
 		isCity := CheckCity(city)
 		if !isCity {
-			panic("Такого города нет")
+			return nil, ErrorNoCity
 		}
 		return &GeoData{
 			City: city,
@@ -33,7 +37,7 @@ func GetMyLocation(city string) (*GeoData, error) {
 	}
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("status code %d", res)
+		return nil, ErrNot200
 	}
 	defer res.Body.Close()
 
